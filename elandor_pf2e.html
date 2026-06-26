@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elandor Ilvannar — Pathfinder 2e</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #0d0f0b;
+    --bg-card:    #131710;
+    --bg-section: #191f14;
+    --bg-row:     #1e2618;
+    --border:     #2e3d22;
+    --border-gold:#7a5c1e;
+    --gold-bright:#d4a017;
+    --gold-light: #e8c96a;
+    --green-main: #4a7c3f;
+    --green-light:#6aab5a;
+    --green-glow: #3d6934;
+    --text-main:  #dde8d0;
+    --text-dim:   #8a9e7a;
+    --text-label: #b0bf96;
+    --red-accent: #8b3a3a;
+    --teal:       #3a7a6e;
+    --teal-light: #5ab8a5;
+    --radius:     6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(74,124,63,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(58,90,52,0.06) 0%, transparent 60%);
+  }
+
+  /* ── PAGE WRAPPER ── */
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 48px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 20px;
+    border-bottom: 2px solid var(--border-gold);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green-main), transparent);
+  }
+
+  .char-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 24px rgba(212,160,23,0.25);
+    line-height: 1.15;
+  }
+  .char-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    color: var(--green-light);
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .header-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .badge {
+    display: inline-block;
+    background: var(--bg-section);
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    color: var(--gold-light);
+    letter-spacing: 0.08em;
+  }
+  .badge.green {
+    border-color: var(--green-main);
+    color: var(--green-light);
+  }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── SECTION ── */
+  .section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: var(--bg-section);
+    border-bottom: 1px solid var(--border-gold);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--gold-bright);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .section-icon {
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+  .section-body { padding: 14px 16px; }
+
+  /* ── ATTRIBUTES ── */
+  .attr-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+  }
+  .attr-box {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 8px 10px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .attr-box:hover { border-color: var(--green-main); }
+  .attr-box.highlight { border-color: var(--gold-bright); }
+  .attr-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .attr-score {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+    display: block;
+  }
+  .attr-mod {
+    font-family: 'Cinzel', serif;
+    font-size: 0.88rem;
+    color: var(--gold-light);
+    display: block;
+    margin-top: 3px;
+  }
+
+  /* ── COMBAT STATS ── */
+  .combat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .stat-box {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 8px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .stat-box:hover { border-color: var(--teal); }
+  .stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .stat-val {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--teal-light);
+    display: block;
+    line-height: 1;
+  }
+  .stat-sub {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* ── SAVES ── */
+  .saves-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .save-box {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .save-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-label);
+    text-transform: uppercase;
+  }
+  .save-prof {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    font-style: italic;
+    display: block;
+  }
+  .save-val {
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  /* ── PROFICIENCY DOTS ── */
+  .prof-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green-main);
+    margin-right: 2px;
+    vertical-align: middle;
+  }
+  .prof-dot.empty { background: var(--border); }
+  .prof-dot.master { background: var(--gold-bright); }
+  .prof-dot.expert { background: var(--teal-light); }
+
+  /* ── SKILLS ── */
+  .skill-row {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 4px;
+    border-bottom: 1px solid rgba(46,61,34,0.4);
+    gap: 8px;
+    transition: background 0.15s;
+  }
+  .skill-row:hover { background: var(--bg-row); }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-name {
+    flex: 1;
+    font-size: 0.88rem;
+    color: var(--text-main);
+  }
+  .skill-ability {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.05em;
+    width: 34px;
+    text-align: center;
+  }
+  .skill-rank-dots { display: flex; gap: 3px; align-items: center; }
+  .skill-total {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    width: 36px;
+    text-align: right;
+  }
+
+  /* ── FEATURES LIST ── */
+  .feature-item {
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(46,61,34,0.4);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+  .feature-item:last-child { border-bottom: none; }
+  .feature-dot {
+    width: 6px; height: 6px;
+    background: var(--green-main);
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .feature-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    color: var(--gold-light);
+    letter-spacing: 0.04em;
+  }
+  .feature-desc {
+    font-size: 0.84rem;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 1px;
+  }
+
+  /* ── SPELLS ── */
+  .spell-level-header {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold-bright);
+    text-transform: uppercase;
+    padding: 6px 0 4px;
+    border-bottom: 1px solid var(--border-gold);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slot-pip {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border: 1px solid var(--gold-bright);
+    border-radius: 50%;
+    margin-left: 4px;
+  }
+  .spell-entry {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(46,61,34,0.3);
+    align-items: baseline;
+  }
+  .spell-entry:last-child { border-bottom: none; }
+  .spell-name {
+    font-size: 0.88rem;
+    color: var(--text-main);
+    font-weight: 500;
+  }
+  .spell-name span {
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    font-style: italic;
+    font-weight: 400;
+  }
+  .spell-trait {
+    font-size: 0.68rem;
+    font-family: 'Cinzel', serif;
+    background: rgba(74,124,63,0.2);
+    border: 1px solid var(--green-main);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--green-light);
+    white-space: nowrap;
+  }
+  .spell-trait.heal { background: rgba(58,122,110,0.2); border-color: var(--teal); color: var(--teal-light); }
+  .spell-trait.conc { background: rgba(139,58,58,0.2); border-color: var(--red-accent); color: #d47a7a; }
+  .spell-trait.bonus { background: rgba(212,160,23,0.15); border-color: var(--gold-bright); color: var(--gold-light); }
+
+  /* ── PERSONALITY ── */
+  .personality-block {
+    background: var(--bg-section);
+    border-left: 3px solid var(--green-main);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  .personality-block:last-child { margin-bottom: 0; }
+  .pers-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--gold-bright);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .pers-text {
+    font-size: 0.87rem;
+    color: var(--text-label);
+    font-style: italic;
+  }
+
+  /* ── NOTES BOX ── */
+  .notes-box {
+    background: rgba(74,124,63,0.07);
+    border: 1px dashed var(--green-main);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .notes-box strong {
+    color: var(--teal-light);
+    font-style: normal;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  /* ── SYSTEM LABEL ── */
+  .system-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 700px) {
+    .attr-grid { grid-template-columns: repeat(3, 1fr); }
+    .combat-grid { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .saves-row { grid-template-columns: 1fr; }
+    .char-name { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="char-name">Elandor Ilvannar</div>
+      <div class="char-subtitle">Clérigo de la Vida · Élfo del Bosque · Nivel 10</div>
+    </div>
+    <div class="header-meta">
+      <span class="badge">PATHFINDER 2e</span>
+      <span class="badge green">LEGAL BUENO</span>
+      <span class="system-label">Doctrina Sacerdote de Guerra</span>
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN GENERAL -->
+  <div class="section" style="margin-bottom:16px;">
+    <div class="section-header">
+      <span class="section-icon">📜</span>
+      <span class="section-title">Información General</span>
+    </div>
+    <div class="section-body">
+      <div class="grid-3">
+        <div>
+          <div class="pers-label">Ancestría</div>
+          <div>Élfo — Herencia Bosque Arbóreo <em style="color:var(--text-dim);font-size:0.8rem;">(Woodland Elf)</em></div>
+        </div>
+        <div>
+          <div class="pers-label">Trasfondo</div>
+          <div>Acólito <em style="color:var(--text-dim);font-size:0.8rem;">(+Religión, +Medicina)</em></div>
+        </div>
+        <div>
+          <div class="pers-label">Deidad</div>
+          <div>Deidad de la Vida <em style="color:var(--text-dim);font-size:0.8rem;">(equiv. Sarenrae)</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATRIBUTOS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">⚔️</span>
+      <span class="section-title">Puntuaciones de Atributo</span>
+    </div>
+    <div class="section-body">
+      <div class="attr-grid">
+        <div class="attr-box">
+          <span class="attr-name">Fue</span>
+          <span class="attr-score">12</span>
+          <span class="attr-mod">+1</span>
+        </div>
+        <div class="attr-box">
+          <span class="attr-name">Des</span>
+          <span class="attr-score">16</span>
+          <span class="attr-mod">+3</span>
+        </div>
+        <div class="attr-box">
+          <span class="attr-name">Con</span>
+          <span class="attr-score">14</span>
+          <span class="attr-mod">+2</span>
+        </div>
+        <div class="attr-box">
+          <span class="attr-name">Int</span>
+          <span class="attr-score">10</span>
+          <span class="attr-mod">+0</span>
+        </div>
+        <div class="attr-box highlight">
+          <span class="attr-name">Sab</span>
+          <span class="attr-score">18</span>
+          <span class="attr-mod">+4</span>
+        </div>
+        <div class="attr-box">
+          <span class="attr-name">Car</span>
+          <span class="attr-score">8</span>
+          <span class="attr-mod">−1</span>
+        </div>
+      </div>
+      <div class="notes-box" style="margin-top:10px;">
+        <strong>Nota de Conversión:</strong> Los élitos tienen penalización a CON; asumimos que fue compensada con bonificaciones libres de nivel. Los bonificaciones de atributo en niveles 1, 5, 10 ya están reflejados en estos valores.
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADÍSTICAS DE COMBATE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🛡️</span>
+      <span class="section-title">Estadísticas de Combate</span>
+    </div>
+    <div class="section-body">
+      <div class="combat-grid" style="margin-bottom:14px;">
+        <div class="stat-box">
+          <span class="stat-label">Puntos de Vida</span>
+          <span class="stat-val">106</span>
+          <span class="stat-sub">6 (ancestría) + 10×10 (clase+CON)</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">CA</span>
+          <span class="stat-val">29</span>
+          <span class="stat-sub">+31 con escudo levantado</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">CD de Conjuro</span>
+          <span class="stat-val">28</span>
+          <span class="stat-sub">10+nivel+exp+SAB</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Ataque de Conjuro</span>
+          <span class="stat-val">+18</span>
+          <span class="stat-sub">nivel+exp+SAB</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Velocidad</span>
+          <span class="stat-val">35 ft</span>
+          <span class="stat-sub">+5 Herencia Arbórea</span>
+        </div>
+      </div>
+
+      <!-- SAVING THROWS -->
+      <div class="saves-row">
+        <div class="save-box">
+          <div>
+            <div class="save-name">Fortaleza</div>
+            <div class="save-prof">Experto (nv.9+)</div>
+          </div>
+          <div class="save-val">+16</div>
+        </div>
+        <div class="save-box">
+          <div>
+            <div class="save-name">Reflejos</div>
+            <div class="save-prof">Entrenado</div>
+          </div>
+          <div class="save-val">+15</div>
+        </div>
+        <div class="save-box">
+          <div>
+            <div class="save-name">Voluntad</div>
+            <div class="save-prof">Experto</div>
+          </div>
+          <div class="save-val">+18</div>
+        </div>
+      </div>
+
+      <!-- PERCEPCIÓN Y ATAQUE -->
+      <div class="saves-row" style="margin-bottom:0;">
+        <div class="save-box">
+          <div>
+            <div class="save-name">Percepción</div>
+            <div class="save-prof">Experto</div>
+          </div>
+          <div class="save-val">+18</div>
+        </div>
+        <div class="save-box">
+          <div>
+            <div class="save-name">Ataque Cuerpo a Cuerpo</div>
+            <div class="save-prof">Espadón / Arma Divina</div>
+          </div>
+          <div class="save-val">+13</div>
+        </div>
+        <div class="save-box">
+          <div>
+            <div class="save-name">Canal Divino (Curar)</div>
+            <div class="save-prof">2 usos / descanso corto</div>
+          </div>
+          <div class="save-val">5d8</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUMNAS: RASGOS + HABILIDADES -->
+  <div class="grid-2">
+
+    <!-- RASGOS DE CLASE Y ANCESTRÍA -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">✦</span>
+        <span class="section-title">Rasgos y Características</span>
+      </div>
+      <div class="section-body">
+
+        <div style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.15em;color:var(--gold-bright);margin-bottom:6px;text-transform:uppercase;">Ancestría — Élfo Arbóreo</div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Visión en Penumbra</div>
+            <div class="feature-desc">Trata la luz tenue como luz normal.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Ojos Agudos</div>
+            <div class="feature-desc">+2 a Percepción para detectar seres ocultos; +1 a Buscar.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Élfo Arbóreo (Herencia)</div>
+            <div class="feature-desc">Ignora terreno difícil de plantas; velocidad +5.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Trance Élfico</div>
+            <div class="feature-desc">4h de meditación = descanso largo (Comunión Éter).</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Familiaridad Armamento Élfico</div>
+            <div class="feature-desc">Competencia con espadas largas, arcos élicos, etc.</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.15em;color:var(--gold-bright);margin-bottom:6px;text-transform:uppercase;">Clase — Sacerdote de Guerra</div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Doctrina: Sacerdote de Guerra</div>
+            <div class="feature-desc">Armadura media y marcial. Golpe Divino (1d6 radiante).</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Canal Divino — Curar</div>
+            <div class="feature-desc">Font Divino: conjuros Curar adicionales (5d8 a nivel 10).</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Discípulo de la Vida</div>
+            <div class="feature-desc">Curar restaura PV extra = 2 + nivel del conjuro.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Bloqueo de Escudo</div>
+            <div class="feature-desc">Reacción: reduce daño con el escudo.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Intervención Divina (nv.10)</div>
+            <div class="feature-desc">1/día: solicita un milagro a tu deidad (CD variable).</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.15em;color:var(--gold-bright);margin-bottom:6px;text-transform:uppercase;">Dotes de Clase Destacadas</div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Manos Sanadoras (nv.2)</div>
+            <div class="feature-desc">Repite el dado más bajo de Curar y usa el mayor resultado.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Curación Comunal (nv.4)</div>
+            <div class="feature-desc">Al curar a otro, tú también recuperas 1d6 PV.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Energía Selectiva (nv.8)</div>
+            <div class="feature-desc">Excluye aliados del área de Canal Divino.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Golpe Restaurador (nv.10)</div>
+            <div class="feature-desc">Los ataques con arma pueden activar efecto de curación menor.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HABILIDADES -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">📚</span>
+        <span class="section-title">Habilidades</span>
+      </div>
+      <div class="section-body">
+        <div style="display:flex;justify-content:flex-end;gap:14px;font-size:0.68rem;color:var(--text-dim);font-family:'Cinzel',serif;letter-spacing:0.08em;margin-bottom:8px;">
+          <span><span class="prof-dot"></span> Ent</span>
+          <span><span class="prof-dot expert"></span> Exp</span>
+          <span><span class="prof-dot master"></span> Mae</span>
+        </div>
+
+        <!-- Skill row macro -->
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot master"></span><span class="prof-dot master"></span><span class="prof-dot master"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Religión</div>
+          <div class="skill-ability">SAB</div>
+          <div class="skill-total">+20</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot expert"></span><span class="prof-dot expert"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Medicina</div>
+          <div class="skill-ability">SAB</div>
+          <div class="skill-total">+18</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot expert"></span><span class="prof-dot expert"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Naturaleza</div>
+          <div class="skill-ability">SAB</div>
+          <div class="skill-total">+18</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Supervivencia</div>
+          <div class="skill-ability">SAB</div>
+          <div class="skill-total">+16</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Sigilo</div>
+          <div class="skill-ability">DES</div>
+          <div class="skill-total">+15</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Arcano</div>
+          <div class="skill-ability">INT</div>
+          <div class="skill-total">+12</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Diplomacia</div>
+          <div class="skill-ability">CAR</div>
+          <div class="skill-total">+11</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-rank-dots"><span class="prof-dot"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span><span class="prof-dot empty"></span></div>
+          <div class="skill-name">Sociedad</div>
+          <div class="skill-ability">INT</div>
+          <div class="skill-total">+12</div>
+        </div>
+
+        <hr class="divider">
+        <div style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.15em;color:var(--gold-bright);margin-bottom:8px;text-transform:uppercase;">Dotes de Habilidad</div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Medicina de Batalla (nv.2)</div>
+            <div class="feature-desc">Usa Medicina para curar heridas en combate (sin kit de curación).</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Recuperación Continua (nv.4)</div>
+            <div class="feature-desc">Reduce el tiempo de recuperación a 10 min por paciente.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Médico de Campaña (nv.8)</div>
+            <div class="feature-desc">Puede tratar a hasta 4 pacientes a la vez con Medicina.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <div class="feature-name">Conocimiento Élfico (nv.1 ancestría)</div>
+            <div class="feature-desc">Entrenado en Arcano y Naturaleza de forma adicional.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end grid-2 -->
+
+  <!-- CONJUROS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">✨</span>
+      <span class="section-title">Conjuros Divinos Preparados — CD 28 · Ataque +18</span>
+    </div>
+    <div class="section-body">
+
+      <div class="grid-3">
+
+        <!-- COLUMN 1 -->
+        <div>
+          <div class="spell-level-header">
+            Trucos
+            <span style="color:var(--text-dim);font-size:0.65rem;">∞ usos</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Guía <span>(V, S) Toque — +1d4 a tirada de habilidad</span></div>
+            <span class="spell-trait bonus">Acción</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Lanza Divina <span>60 ft — 2d4+4 daño espiritual</span></div>
+            <span class="spell-trait">Ranged</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Estabilizar <span>Toque — Estabiliza a 0 PV</span></div>
+            <span class="spell-trait heal">Curar</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Prestidigitación <span>30 ft — Efectos menores</span></div>
+            <span class="spell-trait">Utilidad</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Luz Sagrada <span>5 ft — 2d4 radiante a no-muertos</span></div>
+            <span class="spell-trait">Radiante</span>
+          </div>
+
+          <div class="spell-level-header" style="margin-top:12px;">
+            Nivel 1
+            <span><span class="slot-pip"></span><span class="slot-pip"></span><span class="slot-pip"></span></span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Bendición <span>(Conc.) +1d4 a ataques y salvaciones</span></div>
+            <span class="spell-trait">Área</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Curar <span>Toque/30ft/Área — 1d8+4 PV</span></div>
+            <span class="spell-trait heal">Font</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Detectar Magia <span>30 ft — Percibe auras mágicas</span></div>
+            <span class="spell-trait">Ritual</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Escudo de Fe <span>(Conc.) +2 CA a aliado</span></div>
+            <span class="spell-trait bonus">Aura</span>
+          </div>
+        </div>
+
+        <!-- COLUMN 2 -->
+        <div>
+          <div class="spell-level-header">
+            Nivel 2
+            <span><span class="slot-pip"></span><span class="slot-pip"></span><span class="slot-pip"></span></span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Restauración Menor <span>Toque — Elimina condiciones</span></div>
+            <span class="spell-trait heal">Curar</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Arma Espiritual <span>(Acción Bonus) Arma de 1d8+4</span></div>
+            <span class="spell-trait">Espíritu</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Ayuda <span>30 ft — +5 PV máx. a 3 aliados (8h)</span></div>
+            <span class="spell-trait bonus">Buff</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Paralizar <span>(Conc.) Paraliza humanoide SAB</span></div>
+            <span class="spell-trait conc">Contr.</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Barrera de Sonido <span>(Conc.) Esfera de silencio</span></div>
+            <span class="spell-trait conc">Silencio</span>
+          </div>
+
+          <div class="spell-level-header" style="margin-top:12px;">
+            Nivel 3
+            <span><span class="slot-pip"></span><span class="slot-pip"></span><span class="slot-pip"></span></span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Heroísmo <span>(Conc.) Ventaja en tiradas — +1d4</span></div>
+            <span class="spell-trait bonus">Buff</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Hálito de Vida <span>Reacción — Revive en 1 min</span></div>
+            <span class="spell-trait heal">Font</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Guardas Espirituales <span>(Conc.) 3d8 rad. 15ft</span></div>
+            <span class="spell-trait conc">Aura</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Disipar Magia <span>120 ft — Termina efectos</span></div>
+            <span class="spell-trait">Control</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Curar en Masa <span>(Acción Bonus) 6 aliados 1d4+4</span></div>
+            <span class="spell-trait heal">Área</span>
+          </div>
+        </div>
+
+        <!-- COLUMN 3 -->
+        <div>
+          <div class="spell-level-header">
+            Nivel 4
+            <span><span class="slot-pip"></span><span class="slot-pip"></span><span class="slot-pip"></span></span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Guardia de Muerte <span>Toque — Previene caída a 0 PV</span></div>
+            <span class="spell-trait heal">Buff</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Guardián de la Fe <span>30 ft — 20 daño radiante</span></div>
+            <span class="spell-trait">Guardián</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Libertad de Movimiento <span>Ignora parálisis/terreno</span></div>
+            <span class="spell-trait bonus">Buff</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Destierro <span>(Conc.) Expulsa a criatura del plano</span></div>
+            <span class="spell-trait conc">Control</span>
+          </div>
+
+          <div class="spell-level-header" style="margin-top:12px;">
+            Nivel 5
+            <span><span class="slot-pip"></span><span class="slot-pip"></span><span class="slot-pip"></span><span style="color:var(--teal-light);font-size:0.7rem;margin-left:4px;">+Font</span></span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Curar (Realzado) <span>Área 30ft — 5d8+4 a 6 aliados</span></div>
+            <span class="spell-trait heal">Font</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Resucitar <span>Toque — Revive hasta 10 días</span></div>
+            <span class="spell-trait heal">Font</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Restauración Mayor <span>Toque — Elimina cansancio/maldic.</span></div>
+            <span class="spell-trait heal">Curar</span>
+          </div>
+          <div class="spell-entry">
+            <div class="skill-name">Arma Sagrada <span>(Conc.) +2d6 daño espiritual al arma</span></div>
+            <span class="spell-trait bonus">Buff</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="notes-box" style="margin-top:14px;">
+        <strong>Nota sobre Font Divino:</strong> Con CAR −1 (mínimo 1 uso), Elandor obtiene <em>1 conjuro Curar extra</em> por nivel de conjuro al día. Los conjuros Curar pueden usarse como 1 Acción (toque), 2 Acciones (30 ft, 1 objetivo) o 3 Acciones (30 ft, área). En PF2e, <em>Curar</em> agrupa Cure Wounds + Healing Word en un solo conjuro versátil.
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSONALIDAD -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🌿</span>
+      <span class="section-title">Personalidad y Roleplay</span>
+    </div>
+    <div class="section-body">
+      <div class="grid-2">
+        <div>
+          <div class="personality-block">
+            <div class="pers-label">Rasgo de Personalidad</div>
+            <div class="pers-text">Poseo una calma estoica y una disciplina física rigurosa. Observo antes de actuar, y rara vez pierdo la compostura.</div>
+          </div>
+          <div class="personality-block">
+            <div class="pers-label">Ideal</div>
+            <div class="pers-text">La lógica y el equilibrio natural deben preservarse. La vida fluye en ciclos; no debe forzarse ni interrumpirse.</div>
+          </div>
+        </div>
+        <div>
+          <div class="personality-block" style="border-color:var(--gold-bright);">
+            <div class="pers-label" style="color:var(--teal-light);">Vínculo</div>
+            <div class="pers-text">Protejo un antiguo pergamino que describe los ciclos de la vida. Creo que contiene una verdad divina que no todos están listos para comprender.</div>
+          </div>
+          <div class="personality-block" style="border-color:var(--red-accent);">
+            <div class="pers-label" style="color:#d47a7a;">Defecto</div>
+            <div class="pers-text">Analizo excesivamente los riesgos antes de actuar. En situaciones críticas, esta indecisión puede costar vidas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTAS DE CONVERSIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🔄</span>
+      <span class="section-title">Notas de Conversión D&amp;D 5e → Pathfinder 2e</span>
+    </div>
+    <div class="section-body">
+      <div class="grid-3" style="gap:12px;">
+        <div class="notes-box">
+          <strong>Clase</strong><br>
+          Clérigo (Dominio Vida) → <em>Clérigo, Doctrina Sacerdote de Guerra</em>. Esta doctrina otorga armadura media y armas marciales, replicando el rol combativo del personaje. El equivalente a "Discípulo de la Vida" existe como rasgo de doctrina.
+        </div>
+        <div class="notes-box">
+          <strong>Conjuros</strong><br>
+          PF2e unifica <em>Cure Wounds</em> y <em>Healing Word</em> en el conjuro <em>Curar</em>, que varía según el número de acciones gastadas. <em>Sacred Flame</em> → <em>Lanza Divina</em>. <em>Spirit Guardians</em> y <em>Spiritual Weapon</em> existen directamente.
+        </div>
+        <div class="notes-box">
+          <strong>Mecánicas Clave</strong><br>
+          Channel Divinity → <em>Canal Divino</em> (mismo nombre). Turn Undead existe como activación del Canal. La <em>Intervención Divina</em> se mapea a la dote de clase de nv.10. El sistema de proficiencia usa rangos (Entrenado/Experto/Maestro/Legendario).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;color:var(--text-dim);opacity:0.5;">
+    ELANDOR ILVANNAR · PATHFINDER 2E · NIVEL 10 · CLÉRIGO SACERDOTE DE GUERRA
+  </div>
+
+</div>
+</body>
+</html>
